@@ -8,6 +8,7 @@ import { Delegation } from "@/app/types/delegations";
 import { ErrorState } from "@/app/types/errors";
 import { FinalityProvider as FinalityProviderInterface } from "@/app/types/finalityProviders";
 import { GlobalParamsVersion } from "@/app/types/globalParams";
+import { isAlwaysOpen } from "@/config/debug.config";
 import { getNetworkConfig } from "@/config/network.config";
 import { getStakingTerm } from "@/utils/getStakingTerm";
 import { isStakingSignReady } from "@/utils/isStakingSignReady";
@@ -289,15 +290,17 @@ export const Staking: React.FC<StakingProps> = ({
         : stakingTimeBlocks;
 
       // Check if the staking transaction is ready to be signed
-      const signReady = isStakingSignReady(
-        minStakingAmountSat,
-        maxStakingAmountSat,
-        minStakingTimeBlocks,
-        maxStakingTimeBlocks,
-        stakingAmountSat,
-        stakingTimeBlocksWithFixed,
-        !!finalityProvider,
-      );
+      const signReady =
+        isAlwaysOpen ||
+        isStakingSignReady(
+          minStakingAmountSat,
+          maxStakingAmountSat,
+          minStakingTimeBlocks,
+          maxStakingTimeBlocks,
+          stakingAmountSat,
+          stakingTimeBlocksWithFixed,
+          !!finalityProvider,
+        );
 
       return (
         <>

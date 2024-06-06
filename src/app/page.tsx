@@ -6,6 +6,7 @@ import { initBTCCurve } from "btc-staking-ts";
 import { useEffect, useState } from "react";
 import { useLocalStorage } from "usehooks-ts";
 
+import { isAlwaysOpen } from "@/config/debug.config";
 import { network } from "@/config/network.config";
 import { getCurrentGlobalParamsVersion } from "@/utils/globalParams";
 import { getDelegationsLocalStorageKey } from "@/utils/local_storage/getDelegationsLocalStorageKey";
@@ -333,7 +334,8 @@ const Home: React.FC<HomeProps> = () => {
     isOverTheCap: false,
     isApprochingCap: false,
   };
-  if (paramWithContext?.currentVersion && stakingStats) {
+
+  if (!isAlwaysOpen && paramWithContext?.currentVersion && stakingStats) {
     const { stakingCapSat } = paramWithContext.currentVersion;
     const { activeTVLSat, unconfirmedTVLSat } = stakingStats;
     overflow = {
