@@ -29,6 +29,9 @@ dependencies:
   axios:
     specifier: ^1.6.8
     version: 1.6.8
+  bip174:
+    specifier: ^2.1.1
+    version: 2.1.1
   bitcoinjs-lib:
     specifier: ^6.1.5
     version: 6.1.5

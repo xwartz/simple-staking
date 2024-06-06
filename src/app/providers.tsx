@@ -10,7 +10,7 @@ import { ErrorProvider } from "./context/Error/ErrorContext";
 import { GlobalParamsProvider } from "./context/api/GlobalParamsProvider";
 import { BtcHeightProvider } from "./context/mempool/BtcHeightProvider";
 
-function Providers({ children }: React.PropsWithChildren) {
+function Providers({ children }: React.PropsWithChildren<{}>) {
   const [client] = React.useState(new QueryClient());
 
   return (

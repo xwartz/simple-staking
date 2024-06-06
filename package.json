@@ -24,6 +24,7 @@
     "@tanstack/react-query": "^5.28.14",
     "@tanstack/react-query-next-experimental": "^5.28.14",
     "axios": "^1.6.8",
+    "bip174": "^2.1.1",
     "bitcoinjs-lib": "^6.1.5",
     "btc-staking-ts": "^0.2.0",
     "date-fns": "^3.6.0",
