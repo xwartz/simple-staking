@@ -255,7 +255,6 @@ const Home: React.FC<HomeProps> = () => {
           "Invalid address type. Please use a Native SegWit or Taproot",
         );
       }
-
       const balanceSat = await walletProvider.getBalance();
       const publicKeyNoCoord = getPublicKeyNoCoord(
         await walletProvider.getPublicKeyHex(),
