@@ -2,7 +2,7 @@ import { getNetworkConfig } from "@/config/network.config";
 
 import { Fees, UTXO } from "./wallet/wallet_provider";
 
-const { mempoolApiUrl } = getNetworkConfig();
+const { mempoolApiUrl, rpcUrl } = getNetworkConfig();
 
 /*
     URL Construction methods
@@ -41,6 +41,30 @@ function btcTipHeightUrl(): URL {
 // including the scriptPubKey
 function validateAddressUrl(address: string): URL {
   return new URL(mempoolAPI + "v1/validate-address/" + address);
+}
+
+/**
+ * decode psbt tx
+ * @param psbt - The hex string corresponding to the full transaction.
+ * @returns A promise that resolves to the response message.
+ */
+export async function decodePsbt(psbt: string): Promise<{ result: object }> {
+  const data = {
+    jsonrpc: "2.0",
+    method: "decodepsbt",
+    params: [psbt],
+    id: 1,
+  };
+  const response = await fetch(rpcUrl, {
+    method: "POST",
+    mode: "cors",
+    body: JSON.stringify(data),
+    headers: {
+      "Content-Type": "application/json",
+      "X-DEVICE-TOKEN": "test",
+    },
+  });
+  return await response.json();
 }
 
 /**

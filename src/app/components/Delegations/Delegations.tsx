@@ -26,6 +26,7 @@ import { apiDataToStakingScripts } from "@/utils/apiDataToStakingScripts";
 import { getCurrentGlobalParamsVersion } from "@/utils/globalParams";
 import { getIntermediateDelegationsLocalStorageKey } from "@/utils/local_storage/getIntermediateDelegationsLocalStorageKey";
 import { toLocalStorageIntermediateDelegation } from "@/utils/local_storage/toLocalStorageIntermediateDelegation";
+import { decodePsbt } from "@/utils/mempool_api";
 import { WalletProvider } from "@/utils/wallet/wallet_provider";
 
 import {
@@ -139,12 +140,28 @@ export const Delegations: React.FC<DelegationsProps> = ({
     // Sign the unbonding transaction
     let unbondingTx: Transaction;
     try {
+      const psbtBase64 = unsignedUnbondingTx.toBase64();
+      console.log(">>> unbonding psbt", unsignedUnbondingTx);
+      console.log(">>> unbonding psbt base64", psbtBase64);
+      const decodeTx = await decodePsbt(psbtBase64);
+      console.log(">>> unbonding decodeTx", decodeTx.result);
+      console.log(
+        ">>> unbonding decodeTx stringify",
+        JSON.stringify(decodeTx.result, null, 2),
+      );
       unbondingTx = await signPsbtTx(unsignedUnbondingTx.toHex());
+      console.log(">>> unbonding signedTx", unbondingTx);
+      console.log(
+        ">>> unbonding signedTx stringify",
+        JSON.stringify(unbondingTx, null, 2),
+      );
+      console.log(">>> unbonding signedTx hex", unbondingTx.toHex());
     } catch (error) {
       throw new Error("Failed to sign PSBT for the unbonding transaction");
     }
     // Get the staker signature
     const stakerSignature = unbondingTx.ins[0].witness[0].toString("hex");
+    console.log(">>> unbonding stakerSignature", stakerSignature);
 
     // POST unbonding to the API
     await postUnbonding(
@@ -269,8 +286,24 @@ export const Delegations: React.FC<DelegationsProps> = ({
     let withdrawalTransaction: Transaction;
     try {
       const { psbt } = withdrawPsbtTxResult;
+      const psbtBase64 = psbt.toBase64();
+      console.log(">>> withdraw psbt", psbt);
+      console.log(">>> withdraw psbt base64", psbtBase64);
+      const decodeTx = await decodePsbt(psbtBase64);
+      console.log(">>> withdraw decodeTx", decodeTx.result);
+      console.log(
+        ">>> withdraw decodeTx stringify",
+        JSON.stringify(decodeTx.result, null, 2),
+      );
       withdrawalTransaction = await signPsbtTx(psbt.toHex());
+      console.log(">>> withdraw signedTx", withdrawalTransaction);
+      console.log(
+        ">>> withdraw signedTx stringify",
+        JSON.stringify(withdrawalTransaction, null, 2),
+      );
+      console.log(">>> withdraw signedTx hex", withdrawalTransaction.toHex());
     } catch (error) {
+      console.log(">>> error", error);
       throw new Error("Failed to sign PSBT for the withdrawal transaction");
     }
     // Broadcast withdrawal transaction

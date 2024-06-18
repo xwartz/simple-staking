@@ -8,6 +8,7 @@ interface NetworkConfig {
   coinSymbol: string;
   networkName: string;
   mempoolApiUrl: string;
+  rpcUrl: string;
 }
 
 const mainnetConfig: NetworkConfig = {
@@ -15,6 +16,7 @@ const mainnetConfig: NetworkConfig = {
   coinSymbol: "BTC",
   networkName: "BTC",
   mempoolApiUrl: `${process.env.NEXT_PUBLIC_MEMPOOL_API}`,
+  rpcUrl: `${process.env.NEXT_PUBLIC_RPC_URL}`,
 };
 
 const signetConfig: NetworkConfig = {
@@ -22,6 +24,7 @@ const signetConfig: NetworkConfig = {
   coinSymbol: "sBTC",
   networkName: "BTC signet",
   mempoolApiUrl: `${process.env.NEXT_PUBLIC_MEMPOOL_API}/signet`,
+  rpcUrl: `${process.env.NEXT_PUBLIC_RPC_URL}`,
 };
 
 const testnetConfig: NetworkConfig = {
@@ -29,6 +32,7 @@ const testnetConfig: NetworkConfig = {
   coinSymbol: "tBTC",
   networkName: "BTC testnet",
   mempoolApiUrl: `${process.env.NEXT_PUBLIC_MEMPOOL_API}/testnet`,
+  rpcUrl: `${process.env.NEXT_PUBLIC_RPC_URL}`,
 };
 
 const config: Record<string, NetworkConfig> = {

@@ -6,6 +6,7 @@ import { FinalityProvider } from "@/app/types/finalityProviders";
 import { GlobalParamsVersion } from "@/app/types/globalParams";
 
 import { apiDataToStakingScripts } from "./apiDataToStakingScripts";
+import { decodePsbt } from "./mempool_api";
 import { isTaproot } from "./wallet";
 import { WalletProvider } from "./wallet/wallet_provider";
 
@@ -85,17 +86,25 @@ export const signForm = async (
     );
     // stakingPsbt.setVersion(0);
     unsignedStakingPsbt = stakingPsbt;
-    // console.log(">>> psbt", psbt);
+    console.log(">>> staking psbt", stakingPsbt);
     const psbtHex = stakingPsbt.toHex();
-    console.log(">>> psbtHex", psbtHex);
+    console.log(">>> staking psbtHex", psbtHex);
     const psbt = Psbt.fromHex(psbtHex);
-    console.log(">>> psbt", psbt);
     const psbtBase64 = psbt.toBase64();
-    console.log(">>> psbtBase64", psbtBase64);
+    console.log(">>> staking psbtBase64", psbtBase64);
     const unSignedTx = Transaction.fromBuffer(psbt.data.getTransaction());
     const txId = unSignedTx.getId();
+    console.log(">>> staking txId", txId);
     const vsize = unSignedTx.virtualSize();
+    console.log(">>> staking vsize", vsize);
     const version = psbt.version;
+    console.log(">>> staking version", version);
+    const decodeTx = await decodePsbt(psbtBase64);
+    console.log(">>> staking decodeTx", decodeTx.result);
+    console.log(
+      ">>> staking decodeTx stringify",
+      JSON.stringify(decodeTx.result, null, 2),
+    );
   } catch (error: Error | any) {
     throw new Error(
       error?.message || "Cannot build unsigned staking transaction",
@@ -106,6 +115,9 @@ export const signForm = async (
     stakingTx = await signPsbtTransaction(btcWallet)(
       unsignedStakingPsbt.toHex(),
     );
+    console.log(">>> staking signedTx", stakingTx);
+    console.log(">>> staking signedTx toHex", stakingTx.toHex());
+    console.log(">>> staking signedTx txId", stakingTx.getId());
   } catch (error: Error | any) {
     throw new Error(error?.message || "Staking transaction signing PSBT error");
   }

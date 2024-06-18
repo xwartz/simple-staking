@@ -1,7 +1,9 @@
 {
   "cSpell.words": [
+    "decodepsbt",
     "psbt",
     "timelock",
+    "timelocks",
     "Unbond",
     "UNBONDED",
     "Unbonding",
