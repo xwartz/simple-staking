@@ -142,6 +142,7 @@ export const Delegations: React.FC<DelegationsProps> = ({
     try {
       const psbtBase64 = unsignedUnbondingTx.toBase64();
       console.log(">>> unbonding psbt", unsignedUnbondingTx);
+      console.log(">>> unbonding psbt hex", unsignedUnbondingTx.toHex());
       console.log(">>> unbonding psbt base64", psbtBase64);
       const decodeTx = await decodePsbt(psbtBase64);
       console.log(">>> unbonding decodeTx", decodeTx.result);
@@ -161,7 +162,7 @@ export const Delegations: React.FC<DelegationsProps> = ({
     }
     // Get the staker signature
     const stakerSignature = unbondingTx.ins[0].witness[0].toString("hex");
-    console.log(">>> unbonding stakerSignature", stakerSignature);
+    console.log(">>> unbonding signature", stakerSignature);
 
     // POST unbonding to the API
     await postUnbonding(
@@ -286,6 +287,7 @@ export const Delegations: React.FC<DelegationsProps> = ({
     let withdrawalTransaction: Transaction;
     try {
       const { psbt } = withdrawPsbtTxResult;
+      console.log(">>> withdraw psbt hex", psbt.toHex());
       const psbtBase64 = psbt.toBase64();
       console.log(">>> withdraw psbt", psbt);
       console.log(">>> withdraw psbt base64", psbtBase64);
@@ -302,6 +304,8 @@ export const Delegations: React.FC<DelegationsProps> = ({
         JSON.stringify(withdrawalTransaction, null, 2),
       );
       console.log(">>> withdraw signedTx hex", withdrawalTransaction.toHex());
+      const signature = withdrawalTransaction.ins[0].witness[0].toString("hex");
+      console.log(">>> withdraw signature", signature);
     } catch (error) {
       console.log(">>> error", error);
       throw new Error("Failed to sign PSBT for the withdrawal transaction");

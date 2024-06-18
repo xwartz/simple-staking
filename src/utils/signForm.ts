@@ -117,7 +117,8 @@ export const signForm = async (
     );
     console.log(">>> staking signedTx", stakingTx);
     console.log(">>> staking signedTx toHex", stakingTx.toHex());
-    console.log(">>> staking signedTx txId", stakingTx.getId());
+    const signature = stakingTx.ins[0].witness[0].toString("hex");
+    console.log(">>> staking signature", signature);
   } catch (error: Error | any) {
     throw new Error(error?.message || "Staking transaction signing PSBT error");
   }

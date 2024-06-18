@@ -142,6 +142,12 @@ const Home: React.FC<HomeProps> = () => {
             ) {
               delegation.state = DelegationState.UNBONDED;
             }
+            // if (
+            //   bypassUnbondingProcess &&
+            //   delegation.state === DelegationState.UNBONDING_REQUESTED
+            // ) {
+            //   delegation.state = DelegationState.ACTIVE;
+            // }
             return delegation;
           });
           acc.delegations.push(...page.delegations);
