@@ -6,7 +6,7 @@ import { initBTCCurve } from "btc-staking-ts";
 import { useEffect, useState } from "react";
 import { useLocalStorage } from "usehooks-ts";
 
-import { isAlwaysOpen } from "@/config/debug.config";
+import { bypassUnbondingProcess, isAlwaysOpen } from "@/config/debug.config";
 import { network } from "@/config/network.config";
 import { getCurrentGlobalParamsVersion } from "@/utils/globalParams";
 import { getDelegationsLocalStorageKey } from "@/utils/local_storage/getDelegationsLocalStorageKey";
@@ -135,6 +135,15 @@ const Home: React.FC<HomeProps> = () => {
     select: (data) => {
       const flattenedData = data.pages.reduce<PaginatedDelegations>(
         (acc, page) => {
+          page.delegations = page.delegations.map((delegation) => {
+            if (
+              bypassUnbondingProcess &&
+              delegation.state === DelegationState.UNBONDING
+            ) {
+              delegation.state = DelegationState.UNBONDED;
+            }
+            return delegation;
+          });
           acc.delegations.push(...page.delegations);
           acc.pagination = page.pagination;
           return acc;

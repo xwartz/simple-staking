@@ -1,4 +1,4 @@
-import { Transaction, networks } from "bitcoinjs-lib";
+import { Psbt, Transaction, networks } from "bitcoinjs-lib";
 import { stakingTransaction } from "btc-staking-ts";
 
 import { signPsbtTransaction } from "@/app/common/utils/psbt";
@@ -19,6 +19,14 @@ export const signForm = async (
   address: string,
   publicKeyNoCoord: string,
 ): Promise<string> => {
+  console.log(">>> params", params);
+  console.log(">>> finalityProvider", finalityProvider);
+  console.log(">>> stakingTerm", stakingTerm);
+  console.log(">>> btcWalletNetwork", btcWalletNetwork);
+  console.log(">>> stakingAmountSat", stakingAmountSat);
+  console.log(">>> address", address);
+  console.log(">>> publicKeyNoCoord", publicKeyNoCoord);
+
   if (
     !finalityProvider ||
     stakingAmountSat < params.minStakingAmountSat ||
@@ -55,12 +63,13 @@ export const signForm = async (
   try {
     const netWorkFee = await btcWallet.getNetworkFees();
     feeRate = netWorkFee.fastestFee;
+    console.log(">>> netWorkFee", netWorkFee);
   } catch (error) {
     throw new Error("Cannot get network fees");
   }
   let unsignedStakingPsbt;
   try {
-    const { psbt } = stakingTransaction(
+    const { psbt: stakingPsbt } = stakingTransaction(
       scripts,
       stakingAmountSat,
       address,
@@ -74,7 +83,19 @@ export const signForm = async (
       // https://learnmeabitcoin.com/technical/transaction/locktime/
       params.activationHeight - 1,
     );
-    unsignedStakingPsbt = psbt;
+    // stakingPsbt.setVersion(0);
+    unsignedStakingPsbt = stakingPsbt;
+    // console.log(">>> psbt", psbt);
+    const psbtHex = stakingPsbt.toHex();
+    console.log(">>> psbtHex", psbtHex);
+    const psbt = Psbt.fromHex(psbtHex);
+    console.log(">>> psbt", psbt);
+    const psbtBase64 = psbt.toBase64();
+    console.log(">>> psbtBase64", psbtBase64);
+    const unSignedTx = Transaction.fromBuffer(psbt.data.getTransaction());
+    const txId = unSignedTx.getId();
+    const vsize = unSignedTx.virtualSize();
+    const version = psbt.version;
   } catch (error: Error | any) {
     throw new Error(
       error?.message || "Cannot build unsigned staking transaction",
