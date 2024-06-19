@@ -1,9 +1,14 @@
 import bitgetWalletIcon from "./icons/bitget-wallet.svg";
+import imTokenIcon from "./icons/imtoken.svg";
 import keystoneIcon from "./icons/keystone.svg";
 import okxIcon from "./icons/okx.svg";
 import oneKeyIcon from "./icons/onekey.svg";
 import tomoIcon from "./icons/tomo.svg";
 import { BitgetWallet, bitgetWalletProvider } from "./providers/bitget_wallet";
+import {
+  imTokenWallet,
+  imTokenWalletProvider,
+} from "./providers/imtoken_wallet";
 import { KeystoneWallet } from "./providers/keystone";
 import { OKXWallet, okxProvider } from "./providers/okx_wallet";
 import { OneKeyWallet, oneKeyProvider } from "./providers/onekey_wallet";
@@ -22,6 +27,13 @@ interface IntegratedWallet {
 export const BROWSER_INJECTED_WALLET_NAME = "Browser";
 
 export const walletList: IntegratedWallet[] = [
+  {
+    name: "imToken Wallet",
+    icon: imTokenIcon,
+    wallet: imTokenWallet,
+    provider: imTokenWalletProvider,
+    linkToDocs: "https://token.im",
+  },
   {
     name: "OKX",
     icon: okxIcon,
