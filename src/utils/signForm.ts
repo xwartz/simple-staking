@@ -41,7 +41,7 @@ export const signForm = async (
 
   let inputUTXOs = [];
   try {
-    inputUTXOs = await btcWallet.getUtxos(address);
+    inputUTXOs = await btcWallet.getUtxos(address, stakingAmountSat);
   } catch (error: Error | any) {
     throw new Error(error?.message || "UTXOs error");
   }
@@ -106,6 +106,7 @@ export const signForm = async (
       JSON.stringify(decodeTx.result, null, 2),
     );
   } catch (error: Error | any) {
+    console.log(">>> staking decodeTx error", error);
     throw new Error(
       error?.message || "Cannot build unsigned staking transaction",
     );
@@ -120,6 +121,7 @@ export const signForm = async (
     const signature = stakingTx.ins[0].witness[0].toString("hex");
     console.log(">>> staking signature", signature);
   } catch (error: Error | any) {
+    console.log(">>> staking error", error);
     throw new Error(error?.message || "Staking transaction signing PSBT error");
   }
 

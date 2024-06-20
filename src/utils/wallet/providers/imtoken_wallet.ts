@@ -1,9 +1,4 @@
-import {
-  getAddressBalance,
-  getNetworkFees,
-  getTipHeight,
-  pushTx,
-} from "../../mempool_api";
+import { getNetworkFees, getTipHeight, pushTx } from "../../mempool_api";
 import {
   Fees,
   Network,
@@ -11,6 +6,17 @@ import {
   WalletInfo,
   WalletProvider,
 } from "../wallet_provider";
+
+type Unspents = Array<{
+  txHash: string;
+  vout: number;
+  scriptPubKey: string;
+  scriptType: string;
+  amount: string;
+  address: string;
+  blockNumber: string;
+  derivedPath: string;
+}>;
 
 // window object for imToken Wallet
 export const imTokenWalletProvider = "bitcoin";
@@ -66,8 +72,8 @@ export class imTokenWallet extends WalletProvider {
 
   signPsbt = async (psbtHex: string): Promise<string> => {
     return await this.provider.request({
-      method: "btc_signPsbts",
-      params: [[psbtHex]],
+      method: "btc_signPsbt",
+      params: [psbtHex],
     });
   };
 
@@ -100,17 +106,26 @@ export class imTokenWallet extends WalletProvider {
   };
 
   getBalance = async (): Promise<number> => {
-    return await getAddressBalance(await this.getAddress());
-    // return await this.provider.request({
-    //   method: "btc_getBalance",
-    //   params: [this.walletInfo?.address],
-    // });
+    // return await getAddressBalance(await this.getAddress());
+    return await this.provider.request({
+      method: "btc_getBalance",
+      params: [this.walletInfo?.address],
+    });
   };
 
   getUtxos = async (address: string, amount?: number): Promise<UTXO[]> => {
-    return await this.provider.request({
+    // return await getFundingUTXOs(address, amount);
+    const result: Unspents = await this.provider.request({
       method: "btc_getUnspent",
       params: [address, amount],
+    });
+    return result.map((tx) => {
+      return {
+        txid: tx.txHash,
+        vout: tx.vout,
+        value: Number(tx.amount),
+        scriptPubKey: tx.scriptPubKey,
+      };
     });
   };
 

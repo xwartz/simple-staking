@@ -5,9 +5,12 @@
     "Psbts",
     "timelock",
     "timelocks",
+    "txid",
     "Unbond",
     "UNBONDED",
     "Unbonding",
-    "UTXOs"
+    "UTXO",
+    "UTXOs",
+    "vout"
   ]
 }
