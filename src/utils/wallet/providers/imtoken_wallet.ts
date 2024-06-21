@@ -53,7 +53,7 @@ export class imTokenWallet extends WalletProvider {
   };
 
   getWalletProviderName = async (): Promise<string> => {
-    return "imToken Wallet";
+    return this.provider.name;
   };
 
   getAddress = async (): Promise<string> => {

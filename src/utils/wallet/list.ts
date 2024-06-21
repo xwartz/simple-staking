@@ -28,7 +28,7 @@ export const BROWSER_INJECTED_WALLET_NAME = "Browser";
 
 export const walletList: IntegratedWallet[] = [
   {
-    name: "imToken Wallet",
+    name: "imToken",
     icon: imTokenIcon,
     wallet: imTokenWallet,
     provider: imTokenWalletProvider,
