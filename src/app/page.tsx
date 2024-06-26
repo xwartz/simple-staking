@@ -40,6 +40,46 @@ import { useError } from "./context/Error/ErrorContext";
 import { Delegation, DelegationState } from "./types/delegations";
 import { ErrorHandlerParam, ErrorState } from "./types/errors";
 
+const SignMessageBIP322 = ({
+  provider,
+}: {
+  provider: WalletProvider | undefined;
+}) => {
+  const [sign, setSign] = useState<string | undefined>("");
+  const [err, setErr] = useState("");
+  const onSign = async () => {
+    try {
+      const signature = await provider?.signMessageBIP322("hello world");
+      setSign(signature);
+    } catch (error) {
+      if (error instanceof Error) {
+        setErr(error.message);
+      }
+    }
+  };
+  return (
+    <div className="container mx-auto flex flex-col gap-2 p-6">
+      <h3 className="mb-4 font-bold">BIP322 SignMessage</h3>
+      <input
+        type="string"
+        className={`no-focus input input-bordered w-full`}
+        value={"hello world"}
+        disabled
+      />
+      <p className="text-left text-md text-error">sign result:</p>
+      <input
+        type="string"
+        className={`no-focus input input-bordered w-full`}
+        value={err || sign}
+        contentEditable={false}
+      />
+      <button className="btn-primary btn mt-2 w-full" onClick={onSign}>
+        SignMsg
+      </button>
+    </div>
+  );
+};
+
 interface HomeProps {}
 
 const Home: React.FC<HomeProps> = () => {
@@ -437,6 +477,7 @@ const Home: React.FC<HomeProps> = () => {
           /> */}
         </div>
       </div>
+      <SignMessageBIP322 provider={btcWallet} />
       <FAQ />
       <Footer />
       <ConnectModal

@@ -153,6 +153,7 @@ export const Staking: React.FC<StakingProps> = ({
       try {
         txID = await btcWallet.pushTx(signedTxHex);
       } catch (error: Error | any) {
+        console.log(">>> pushTx error", error);
         throw error;
       }
 

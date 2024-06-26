@@ -88,7 +88,10 @@ export class imTokenWallet extends WalletProvider {
   };
 
   signMessageBIP322 = async (message: string): Promise<string> => {
-    throw new Error("not supported");
+    return await this.provider.request({
+      method: "btc_signMessage",
+      params: [message, "bip322-simple"],
+    });
   };
 
   getNetwork = async (): Promise<Network> => {
