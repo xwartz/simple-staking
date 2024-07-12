@@ -96,7 +96,7 @@ export class imTokenWallet extends WalletProvider {
 
   getNetwork = async (): Promise<Network> => {
     return await this.provider.request({
-      method: "btc_network",
+      method: "btc_getNetwork",
       params: [],
     });
   };
