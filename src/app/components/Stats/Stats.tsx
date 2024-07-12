@@ -1,14 +1,21 @@
 import Image from "next/image";
-import { Fragment } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { AiOutlineInfoCircle } from "react-icons/ai";
 import { Tooltip } from "react-tooltip";
 
 import { useGlobalParams } from "@/app/context/api/GlobalParamsProvider";
+import {
+  StakingStats,
+  useStakingStats,
+} from "@/app/context/api/StakingStatsProvider";
 import { useBtcHeight } from "@/app/context/mempool/BtcHeightProvider";
-import { StakingStats } from "@/app/types/stakingStats";
+import { GlobalParamsVersion } from "@/app/types/globalParams";
 import { getNetworkConfig } from "@/config/network.config";
 import { satoshiToBtc } from "@/utils/btcConversions";
-import { getCurrentGlobalParamsVersion } from "@/utils/globalParams";
+import {
+  ParamsWithContext,
+  getCurrentGlobalParamsVersion,
+} from "@/utils/globalParams";
 import { maxDecimals } from "@/utils/maxDecimals";
 
 import confirmedTvl from "./icons/confirmed-tvl.svg";
@@ -17,37 +24,112 @@ import pendingStake from "./icons/pending-stake.svg";
 import stakers from "./icons/stakers.svg";
 import stakingTvlCap from "./icons/staking-tvl-cap.svg";
 
-interface StatsProps {
-  stakingStats: StakingStats | undefined;
-  isLoading: boolean;
-}
+const buildNextCapText = (
+  coinName: string,
+  btcHeight: number,
+  nextVersion: GlobalParamsVersion,
+) => {
+  const { stakingCapHeight, stakingCapSat, activationHeight } = nextVersion;
+  if (stakingCapHeight) {
+    const remainingBlocks = activationHeight - btcHeight - 1;
+    return {
+      title: "Staking Window",
+      value: `opens in ${remainingBlocks} ${remainingBlocks == 1 ? "block" : "blocks"}`,
+    };
+  } else if (stakingCapSat) {
+    return {
+      title: "Next Staking TVL Cap",
+      value: `${maxDecimals(satoshiToBtc(stakingCapSat), 8)} ${coinName}`,
+    };
+  }
+};
 
-export const Stats: React.FC<StatsProps> = ({ stakingStats, isLoading }) => {
+const buildStakingCapSection = (
+  coinName: string,
+  btcHeight: number,
+  paramsCtx: ParamsWithContext,
+) => {
+  const { currentVersion, nextVersion, isApprochingNextVersion } = paramsCtx;
+  if (!currentVersion) {
+    return;
+  }
+  if (isApprochingNextVersion && nextVersion) {
+    return buildNextCapText(coinName, btcHeight, nextVersion);
+  }
+  const { stakingCapHeight, stakingCapSat, confirmationDepth } = currentVersion;
+  if (stakingCapHeight) {
+    const numOfBlockLeft = stakingCapHeight + confirmationDepth - btcHeight - 1;
+    return {
+      title: "Staking Window",
+      value:
+        numOfBlockLeft > 0
+          ? `closes in ${numOfBlockLeft} ${numOfBlockLeft == 1 ? "block" : "blocks"}`
+          : "closed",
+    };
+  } else if (stakingCapSat) {
+    return {
+      title: "Staking TVL Cap",
+      value: `${maxDecimals(satoshiToBtc(stakingCapSat), 8)} ${coinName}`,
+    };
+  }
+};
+
+export const Stats: React.FC = () => {
+  const [stakingStats, setStakingStats] = useState<StakingStats | undefined>({
+    activeTVLSat: 0,
+    totalTVLSat: 0,
+    activeDelegations: 0,
+    totalDelegations: 0,
+    totalStakers: 0,
+    unconfirmedTVLSat: 0,
+  });
+  const [stakingCapText, setStakingCapText] = useState<{
+    title: string;
+    value: string;
+  }>({
+    title: "Staking TVL Cap",
+    value: "-",
+  });
+  const [isLoading, setIsLoading] = useState(true);
+  const stakingStatsProvider = useStakingStats();
   const btcHeight = useBtcHeight();
   const globalParams = useGlobalParams();
-  let stakingCapSat = 0;
-  if (btcHeight && globalParams) {
-    const { currentVersion } = getCurrentGlobalParamsVersion(
+
+  const { coinName } = getNetworkConfig();
+
+  // Load the data from staking stats provider
+  useEffect(() => {
+    if (stakingStatsProvider.data) {
+      setStakingStats(stakingStatsProvider.data);
+    }
+    setIsLoading(stakingStatsProvider.isLoading || globalParams.isLoading);
+  }, [stakingStatsProvider, globalParams]);
+
+  useEffect(() => {
+    if (!btcHeight || !globalParams.data) {
+      return;
+    }
+    const paramsWithCtx = getCurrentGlobalParamsVersion(
       btcHeight + 1,
-      globalParams,
+      globalParams.data,
     );
-    stakingCapSat = currentVersion?.stakingCapSat || 0;
-  }
+    if (!paramsWithCtx) {
+      return;
+    }
+    const cap = buildStakingCapSection(coinName, btcHeight, paramsWithCtx);
+    if (cap) setStakingCapText(cap);
+  }, [globalParams, btcHeight, stakingStats, coinName]);
 
   const formatter = Intl.NumberFormat("en", {
     notation: "compact",
     maximumFractionDigits: 2,
   });
 
-  const { coinName } = getNetworkConfig();
-
   const sections = [
     [
       {
-        title: "Staking TVL Cap",
-        value: stakingCapSat
-          ? `${maxDecimals(satoshiToBtc(stakingCapSat), 8)} ${coinName}`
-          : "-",
+        title: stakingCapText.title,
+        value: stakingCapText.value,
         icon: stakingTvlCap,
       },
       {
@@ -63,6 +145,11 @@ export const Stats: React.FC<StatsProps> = ({ stakingStats, isLoading }) => {
           ? `${maxDecimals(satoshiToBtc(stakingStats.unconfirmedTVLSat - stakingStats.activeTVLSat), 8)} ${coinName}`
           : 0,
         icon: pendingStake,
+        tooltip:
+          stakingStats &&
+          stakingStats.unconfirmedTVLSat - stakingStats.activeTVLSat < 0
+            ? "Pending TVL can be negative when there are unbonding requests"
+            : undefined,
       },
     ],
     [
@@ -85,7 +172,7 @@ export const Stats: React.FC<StatsProps> = ({ stakingStats, isLoading }) => {
   ];
 
   return (
-    <div className="card flex flex-col gap-4 bg-base-300 p-1 shadow-sm 2xl:flex-row 2xl:justify-between">
+    <div className="card flex flex-col gap-4 bg-base-300 p-1 shadow-sm lg:flex-row lg:justify-between">
       {sections.map((section, index) => (
         <div
           key={index}
@@ -93,7 +180,7 @@ export const Stats: React.FC<StatsProps> = ({ stakingStats, isLoading }) => {
         >
           {section.map((subSection, subIndex) => (
             <Fragment key={subSection.title}>
-              <div className="flex items-center gap-2 md:flex-1 md:flex-col 2xl:flex-initial 2xl:flex-row">
+              <div className="flex items-center gap-2 md:flex-1 md:flex-col lg:flex-initial lg:flex-row flex-wrap justify-center">
                 <div className="flex items-center gap-2">
                   <Image src={subSection.icon} alt={subSection.title} />
                   <div className="flex items-center gap-1">
